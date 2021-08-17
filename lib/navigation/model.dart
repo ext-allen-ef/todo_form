@@ -1,1 +1,3 @@
-enum Navigation {all, todo, done}
+enum Navigation {
+  all, todo, done
+}

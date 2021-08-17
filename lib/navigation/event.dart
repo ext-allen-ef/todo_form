@@ -1,9 +1,11 @@
-import 'model.dart';
+import 'navigation.dart';
 
-abstract class NavigationEvent {}
+class NavigationEvent {
+  Navigation navigation = Navigation.all;
+}
 
 class UpdateNavigationEvent extends NavigationEvent {
-  final Navigation navigation;
-
-  UpdateNavigationEvent(this.navigation);
+  UpdateNavigationEvent({required Navigation navigation}) {
+    this.navigation = navigation;
+  }
 }

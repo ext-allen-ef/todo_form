@@ -1,15 +1,14 @@
-import 'package:bloc/bloc.dart';
-import 'model.dart';
-import 'state.dart';
-import 'event.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
+import 'navigation.dart';
 
 class NavigationBloc extends Bloc<NavigationEvent, NavigationState> {
-  NavigationBloc() : super(CurrentNavigationState(Navigation.all));
+  NavigationBloc() : super(NavigationState(navigation: Navigation.all));
 
   @override
   Stream<NavigationState> mapEventToState(NavigationEvent event) async* {
     if(event is UpdateNavigationEvent) {
-      yield CurrentNavigationState(event.navigation);
+      yield CurrentNavigationState(navigation: event.navigation, navigationSource: UpdateNavigationEvent);
     }
   }
 

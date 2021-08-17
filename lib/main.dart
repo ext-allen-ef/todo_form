@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:sandbox/todo/repository.dart';
+import 'package:sandbox/todo_list.dart';
 import 'todo/todo.dart';
-import 'todo_form/todo_form.dart';
 import 'navigation/navigation.dart';
+import 'todo_form/todo_form.dart';
 
 void main() {
   runApp(MyBusinessApp());
@@ -20,9 +22,7 @@ class MyBusinessApp extends StatelessWidget {
         home: MultiBlocProvider(
           providers: [
             BlocProvider(create: (_) => NavigationBloc()),
-            BlocProvider(
-              create: (_) => TodoFormBloc(),
-            ),
+            BlocProvider(create: (_) => TodoFormBloc()),
             BlocProvider(
               create: (BuildContext context) =>
                   TodoBloc(context.read<TodoRepository>())
@@ -51,116 +51,82 @@ class Home extends StatelessWidget {
                 context: context,
                 builder: (BuildContext context) {
                   return BlocProvider.value(
-                    value: bloc,
-                    child: AlertDialog(
-                      content: TodoForm(
-                        todo: todo,
-                      ),
-                    ),
-                  );
+                      value: bloc,
+                      child: AlertDialog(content: TodoFormWidget(todo: todo)));
                 });
-          } else if (state is AddedTodoFormState) {
-            context
-                .read<TodoBloc>()
-                .add(AddTodoEvent(todo: state.todo));
+          }
+          if(state is ShowEditTodoFormState) {
+            final todo = state.todo;
+            final bloc = context.read<TodoFormBloc>();
+            showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return BlocProvider.value(
+                      value: bloc,
+                      child: AlertDialog(content: TodoFormWidget(todo: todo)));
+                });
+          }
+          if (state is AddedTodoFormState) {
+            context.read<TodoBloc>().add(AddTodoEvent(todo: state.todo));
+          }
+
+          if(state is SavedTodoFormState) {
+            context.read<TodoBloc>().add(UpdateTodoEvent(newTodo: state.todo, toBeUpdated: state.toBeUpdated));
+          }
+          if (state is AddedTodoFormState || state is SavedTodoFormState) {
+            Navigator.of(context).pop();
           }
         },
         child: Builder(builder: (context) {
-          final todoState = context.watch<TodoBloc>().state;
-          final navigationState = context.watch<NavigationBloc>().state;
-          if (todoState is UninitializedTodoState) {
+          final state = context.watch<TodoBloc>().state;
+          final navigation = context.watch<NavigationBloc>().state;
+
+          if (state is UninitializedTodoState) {
             return Center(child: CircularProgressIndicator());
-          } else if (todoState is LoadedTodoState) {
-            if (navigationState is CurrentNavigationState) {
-              if (navigationState.navigation == Navigation.all) {
-                return TodoList(
-                  todos: todoState.todos,
-                );
-              } else if (navigationState.navigation == Navigation.done) {
-                return TodoList(
-                  todos: todoState.todos.where((t) => t.completed).toList(),
-                );
-              } else {
-                return TodoList(
-                  todos: todoState.todos.where((t) => !t.completed).toList(),
-                );
+          } else if (state is LoadedTodoState) {
+            if (navigation is CurrentNavigationState) {
+              var todos = state.all;
+              switch (navigation.navigation) {
+                case Navigation.todo:
+                  todos = state.todos;
+                  break;
+                case Navigation.done:
+                  todos = state.completed;
+                  break;
+                default:
+                  todos = state.all;
+                  break;
               }
+              return TodoList(todos: todos);
             }
+            return TodoList(
+              todos: state.all,
+            );
           }
           return Text('Unhandled state');
         }),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () =>
-            context.read<TodoFormBloc>().add(ShowAddTodoFormEvent()),
+        onPressed: () async {
+          context.read<TodoFormBloc>().add(ShowAddTodoFormEvent());
+        },
         child: Icon(Icons.add),
       ),
       bottomNavigationBar: BlocBuilder<NavigationBloc, NavigationState>(
           builder: (context, state) {
-        if (state is CurrentNavigationState) {
-          return BottomNavigationBar(
-            currentIndex: state.navigation.index,
-            onTap: (value) => context
-                .read<NavigationBloc>()
-                .add(UpdateNavigationEvent(Navigation.values[value])),
-            items: [
-              BottomNavigationBarItem(
-                  icon: Icon(Icons.all_inbox), label: 'All'),
-              BottomNavigationBarItem(
-                  icon: Icon(Icons.mark_email_unread), label: 'Todo'),
-              BottomNavigationBarItem(icon: Icon(Icons.done), label: 'Done'),
-            ],
-          );
-        }
-        return SizedBox.shrink();
+        return BottomNavigationBar(
+          currentIndex: state.navigation!.index, //state.navigation.index,
+          onTap: (value) => context
+              .read<NavigationBloc>()
+              .add(UpdateNavigationEvent(navigation: Navigation.values[value])),
+          items: [
+            BottomNavigationBarItem(icon: Icon(Icons.all_inbox), label: 'All'),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.mark_email_unread), label: 'Todo'),
+            BottomNavigationBarItem(icon: Icon(Icons.done), label: 'Done'),
+          ],
+        );
       }),
-    );
-  }
-}
-
-class TodoList extends StatelessWidget {
-  final List<Todo> todos;
-
-  const TodoList({
-    Key? key,
-    required this.todos,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView(
-      children: todos
-          .map<Widget>(
-            (t) => Card(
-              elevation: 10.0,
-              child: Container(
-                padding: const EdgeInsets.all(
-                  14.0,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      t.name,
-                      style: TextStyle(
-                        fontSize: 35.0,
-                      ),
-                    ),
-                    Checkbox(
-                        value: t.completed,
-                        onChanged: (bool? value) {
-                          if (value != null) {
-                            context.read<TodoBloc>().add(UpdateTodoEvent(
-                                toBeUpdated: t,
-                                updatedTodo: t.copyWith(completed: value)));
-                          }
-                        }),
-                  ],
-                ),
-              ),
-            ),
-          )
-          .toList(),
     );
   }
 }

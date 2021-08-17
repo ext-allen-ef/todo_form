@@ -1,9 +1,18 @@
-import 'model.dart';
+import 'navigation.dart';
 
-abstract class NavigationState {}
+class NavigationState {
+  final Navigation? navigation;
+  final Type? navigationSource;
+
+  NavigationState({this.navigation, this.navigationSource});
+}
 
 class CurrentNavigationState extends NavigationState {
-  final Navigation navigation;
+  CurrentNavigationState({navigation, navigationSource}):
+        super(navigation: navigation, navigationSource: navigationSource);
 
-  CurrentNavigationState(this.navigation);
+}
+
+class CurrentNavigationFromPageState extends CurrentNavigationState {
+
 }

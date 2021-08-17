@@ -2,8 +2,6 @@ import 'model.dart';
 
 abstract class TodoEvent {}
 
-class LoadEventsTodoEvent extends TodoEvent {}
-
 class AddTodoEvent extends TodoEvent {
   final Todo todo;
 
@@ -12,7 +10,13 @@ class AddTodoEvent extends TodoEvent {
 
 class UpdateTodoEvent extends TodoEvent {
   final Todo toBeUpdated;
-  final Todo updatedTodo;
+  final Todo newTodo;
 
-  UpdateTodoEvent({required this.toBeUpdated, required this.updatedTodo});
+  UpdateTodoEvent({required this.toBeUpdated, required this.newTodo});
+}
+
+class LoadEventsTodoEvent extends TodoEvent {
+  // final List<Todo> todos;
+  //
+  // LoadEventsTodoEvent ({required this.todos});
 }

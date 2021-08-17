@@ -1,17 +1,22 @@
+import 'todo_form.dart';
 import 'package:bloc/bloc.dart';
-import 'event.dart';
-import 'state.dart';
 
 class TodoFormBloc extends Bloc<TodoFormEvent, TodoFormState> {
-  TodoFormBloc() : super(InitialTodoFormState());
+  TodoFormBloc() : super(UninitializedFormState());
 
   @override
-  Stream<TodoFormState> mapEventToState(TodoFormEvent event) async* {
+  Stream<TodoFormState> mapEventToState(event) async* {
     if(event is ShowAddTodoFormEvent) {
       yield ShowAddTodoFormState();
-    } else if(event is AddTodoFormEvent) {
-      yield AddedTodoFormState(event.todo);
+    }
+    if(event is EditTodoFormEvent) {
+      yield ShowEditTodoFormState(todo: event.todo);
+    }
+    else if (event is AddTodoFormEvent) {
+      yield AddedTodoFormState(todo: event.todo);
+    }
+    if(event is SaveTodoFormEvent) {
+      yield SavedTodoFormState(todo: event.todo, toBeUpdated: event.toBeUpdated);
     }
   }
-
 }

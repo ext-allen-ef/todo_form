@@ -10,8 +10,13 @@ class TodoFormScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: TodoForm(
-        todo: todo,
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 28.0),
+        child: Center(
+          child: TodoForm(
+            todo: todo,
+          ),
+        ),
       ),
     );
   }

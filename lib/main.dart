@@ -53,6 +53,7 @@ class Home extends StatelessWidget {
               ),
             ));
           } else if (state is AddedTodoFormState) {
+            print('hi');
             context.read<TodoBloc>().add(AddTodoEvent(todo: state.todo));
           }
         },

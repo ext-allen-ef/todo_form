@@ -3,34 +3,31 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'todo/todo.dart';
 import 'todo_form/todo_form.dart';
 import 'navigation/navigation.dart';
+import 'injection_container.dart' as di;
 
 void main() {
+  di.init();
   runApp(MyBusinessApp());
 }
 
 class MyBusinessApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return RepositoryProvider(
-      create: (_) => TodoRepository(),
-      child: MaterialApp(
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-        ),
-        home: MultiBlocProvider(
-          providers: [
-            BlocProvider(create: (_) => NavigationBloc()),
-            BlocProvider(
-              create: (_) => TodoFormBloc(),
-            ),
-            BlocProvider(
-              create: (BuildContext context) =>
-                  TodoBloc(context.read<TodoRepository>())
-                    ..add(LoadEventsTodoEvent()),
-            )
-          ],
-          child: Home(),
-        ),
+    return MaterialApp(
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: MultiBlocProvider(
+        providers: [
+          BlocProvider<NavigationBloc>(create: (_) => di.sl()),
+          BlocProvider<TodoFormBloc>(
+            create: (_) => di.sl(),
+          ),
+          BlocProvider<TodoBloc>(
+            create: (_) => di.sl()..add(LoadEventsTodoEvent()),
+          )
+        ],
+        child: Home(),
       ),
     );
   }
@@ -47,22 +44,16 @@ class Home extends StatelessWidget {
           if (state is ShowAddTodoFormState) {
             final todo = Todo(completed: false, name: '');
             final bloc = context.read<TodoFormBloc>();
-            showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return BlocProvider.value(
-                    value: bloc,
-                    child: AlertDialog(
-                      content: TodoForm(
-                        todo: todo,
-                      ),
-                    ),
-                  );
-                });
+            Navigator.of(context).push(MaterialPageRoute(
+              builder: (_) => BlocProvider.value(
+                value: bloc,
+                child: TodoFormScreen(
+                  todo: todo,
+                ),
+              ),
+            ));
           } else if (state is AddedTodoFormState) {
-            context
-                .read<TodoBloc>()
-                .add(AddTodoEvent(todo: state.todo));
+            context.read<TodoBloc>().add(AddTodoEvent(todo: state.todo));
           }
         },
         child: Builder(builder: (context) {

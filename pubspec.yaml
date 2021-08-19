@@ -11,11 +11,14 @@ dependencies:
     sdk: flutter
   cupertino_icons: ^1.0.2
   flutter_bloc: ^7.1.0
+  get_it: ^7.2.0
   freezed_annotation:
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  bloc_test: ^8.1.0
+  mockito: ^5.0.14
   build_runner:
   freezed:
 

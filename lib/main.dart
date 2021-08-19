@@ -13,6 +13,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       home: BlocProvider<DogBloc>(
         child: HomeScreen(),
         create: (_) => di.sl()..add(LoadDogEvent()),
@@ -29,11 +30,54 @@ class HomeScreen extends StatelessWidget {
         builder: (context, state) {
           if (state is DogLoadedDogState) {
             return Center(
-              child: Image.network(state.dog.message),
+              child: GestureDetector(
+                onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                    builder: (_) => DogDetailScreen(url: state.dog.message))),
+                child: Hero(
+                  tag: 'dog',
+                  child: Image.network(
+                    state.dog.message,
+                  ),
+                ),
+              ),
             );
           }
           return Center(child: CircularProgressIndicator());
         },
+      ),
+    );
+  }
+}
+
+class DogDetailScreen extends StatelessWidget {
+  final String url;
+
+  DogDetailScreen({Key? key, required this.url}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+    return Scaffold(
+      body: Column(
+        children: [
+          Hero(
+            tag: 'dog',
+            child: Container(
+              height: mediaQuery.size.height / 3,
+              width: mediaQuery.size.width,
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: NetworkImage(url),
+                  fit: BoxFit.fitWidth,
+                ),
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('Go Back'),
+          ),
+        ],
       ),
     );
   }
